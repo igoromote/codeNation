@@ -1,34 +1,73 @@
-from sklearn import datasets, neighbors, linear_model
+# Author: Alexandre Gramfort <alexandre.gramfort@inria.fr>
+# License: BSD 3 clause
 
-digits = datasets.load_digits()
-X_digits = digits.data
-y_digits = digits.target
+import matplotlib.pyplot as plt
+import numpy as np
 
-n_samples = len(X_digits)
+from sklearn.linear_model import LogisticRegression
+from sklearn.svm import SVC
+from sklearn.gaussian_process import GaussianProcessClassifier
+from sklearn.gaussian_process.kernels import RBF
+from sklearn import datasets
 
-X_train = X_digits[:int(.9 * n_samples)]
-y_train = y_digits[:int(.9 * n_samples)]
-X_test = X_digits[int(.9 * n_samples):]
-y_test = y_digits[int(.9 * n_samples):]
+iris = datasets.load_iris()
+X = iris.data[:, 0:2]  # we only take the first two features for visualization
+y = iris.target
 
-knn = neighbors.KNeighborsClassifier()
-logistic = linear_model.LogisticRegression()
+n_features = X.shape[1]
 
-print(X_train.shape[0])
-print(X_train.shape[1])
-print(X_test.shape[0])
-print(X_test.shape[1])
-print(y_train.shape[0])
+C = 1.0
+kernel = 1.0 * RBF([1.0, 1.0])  # for GPC
 
-print(type(X_train))
-print(type(y_train))
-print(type(X_test))
-print(type(y_test))
+# Create different classifiers. The logistic regression cannot do
+# multiclass out of the box.
+classifiers = {'L1 logistic': LogisticRegression(C=C, penalty='l1'),
+               'L2 logistic (OvR)': LogisticRegression(C=C, penalty='l2'),
+               'Linear SVC': SVC(kernel='linear', C=C, probability=True,
+                                 random_state=0),
+               'L2 logistic (Multinomial)': LogisticRegression(
+                C=C, solver='lbfgs', multi_class='multinomial'),
+               'GPC': GaussianProcessClassifier(kernel)
+               }
 
-knn.fit(X_train, y_train)
-print(knn.predict(X_test))
-print(y_test)
+n_classifiers = len(classifiers)
 
-print('KNN score: %f' % knn.fit(X_train, y_train).score(X_test, y_test))
-print('LogisticRegression score: %f'
-      % logistic.fit(X_train, y_train).score(X_test, y_test))
+plt.figure(figsize=(3 * 2, n_classifiers * 2))
+plt.subplots_adjust(bottom=.2, top=.95)
+
+xx = np.linspace(3, 9, 100)
+yy = np.linspace(1, 5, 100).T
+xx, yy = np.meshgrid(xx, yy)
+Xfull = np.c_[xx.ravel(), yy.ravel()]
+
+for index, (name, classifier) in enumerate(classifiers.items()):
+    classifier.fit(X, y)
+
+    y_pred = classifier.predict_proba(X)
+    print()
+    print(y_pred)
+    print()
+    classif_rate = np.mean(y_pred.ravel() == y.ravel()) * 100
+    print("classif_rate for %s : %f " % (name, classif_rate))
+
+    # View probabilities=
+    probas = classifier.predict_proba(Xfull)
+    n_classes = np.unique(y_pred).size
+    for k in range(n_classes):
+        plt.subplot(n_classifiers, n_classes, index * n_classes + k + 1)
+        plt.title("Class %d" % k)
+        if k == 0:
+            plt.ylabel(name)
+        imshow_handle = plt.imshow(probas[:, k].reshape((100, 100)),
+                                   extent=(3, 9, 1, 5), origin='lower')
+        plt.xticks(())
+        plt.yticks(())
+        idx = (y_pred == k)
+        if idx.any():
+            plt.scatter(X[idx, 0], X[idx, 1], marker='o', c='k')
+
+ax = plt.axes([0.15, 0.04, 0.7, 0.05])
+plt.title("Probability")
+plt.colorbar(imshow_handle, cax=ax, orientation='horizontal')
+
+plt.show()
