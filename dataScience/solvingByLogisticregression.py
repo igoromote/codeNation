@@ -43,41 +43,13 @@ def getFirst40Answers (df):
         i = i + 1
     return inputToPredict
 
-def transformLettersIntoNumbers(df, letter, rowSize):
-    arrayPredict = df.values
-    arrayPredict1D = arrayPredict.ravel()
-    i = 0
-    j = 0
-    while i < arrayPredict1D.size:
-        try:
-            # batata = arrayPredict1D[i]
-            # arrayPredict1D[i] = (ord(arrayPredict1D[i]) - ord('A') + 1)
-            # if (arrayPredict1D[i] < 0):
-            #     print(arrayPredict1D[i])
-            #     print(i)
-            #     print(batata)
-            if arrayPredict1D[i] == letter:
-                arrayPredict1D[i] = 1
-            else:
-                arrayPredict1D[i] = 0
-        except:
-            j = j + 1
-        finally:
-            i = i + 1
-    if rowSize > 1:
-        arrayPredict2D = np.reshape(arrayPredict1D, (-1,rowSize))
-        return arrayPredict2D
-    else:
-        return arrayPredict1D
-
 def getLast5Answers(df):
-    all5 = df['TX_RESPOSTAS_MT'].astype(str).str[40:]
-    answer41 = df['TX_RESPOSTAS_MT'].astype(str).str[40]
-    answer42 = df['TX_RESPOSTAS_MT'].astype(str).str[41]
-    answer43 = df['TX_RESPOSTAS_MT'].astype(str).str[42]
-    answer44 = df['TX_RESPOSTAS_MT'].astype(str).str[43]
-    answer45 = df['TX_RESPOSTAS_MT'].astype(str).str[44]
-    return all5,answer41,answer42,answer43,answer44,answer45
+    a41 = df['TX_RESPOSTAS_MT'].astype(str).str[40]
+    a42 = df['TX_RESPOSTAS_MT'].astype(str).str[41]
+    a43 = df['TX_RESPOSTAS_MT'].astype(str).str[42]
+    a44 = df['TX_RESPOSTAS_MT'].astype(str).str[43]
+    a45 = df['TX_RESPOSTAS_MT'].astype(str).str[44]
+    return a41, a42, a43, a44, a45
 
 def transformIndexToLetter(indexArray):
     for i in range(0, indexArray.size):
@@ -111,6 +83,35 @@ def filterDotsAndAsterics(df):
     print("Finish")
     df = df.drop(df.index[toDrop])
     return df
+
+def transformLettersIntoNumbers(df):
+    arrayPredict = df.values
+    arrayPredict1D = arrayPredict.ravel()
+    i = 0
+    j = 0
+    while i < arrayPredict1D.size:
+        try:
+            if arrayPredict1D[i] == 'A':
+                arrayPredict1D[i] = 1
+            elif arrayPredict1D[i] == 'B':
+                arrayPredict1D[i] = 2
+            elif arrayPredict1D[i] == 'C':
+                arrayPredict1D[i] = 3
+            elif arrayPredict1D[i] == 'D':
+                arrayPredict1D[i] = 4
+            elif arrayPredict1D[i] == 'E':
+                arrayPredict1D[i] = 5
+            elif arrayPredict1D[i] == '.':
+                arrayPredict1D[i] = 0.3
+            elif arrayPredict1D[i] == '*':
+                arrayPredict1D[i] = -0.3
+        except:
+            j = j + 1
+        finally:
+            i = i + 1
+    arrayPredict2D = np.reshape(arrayPredict1D, (-1,40))
+    return arrayPredict2D
+
 # Find grade of MT
 df = openCSV('data/train.csv')
 df = df.dropna(subset = ['NU_NOTA_LC','NU_NOTA_CH','NU_NOTA_CN','NU_NOTA_MT','NU_NOTA_REDACAO'])
@@ -124,131 +125,34 @@ dftr = openCSV('data/train.csv')
 dftr = dftr.dropna(subset= ['NU_NOTA_MT', 'TX_RESPOSTAS_MT'])
 # dftr = filterDotsAndAsterics(dftr)
 dfToTrain = getFirst40Answers(dftr)
-dfToTrain['Nota'] = dftr['NU_NOTA_MT']
-all5A,a41A,a42A,a43A,a44A,a45A = getLast5Answers(dftr)
-all5B,a41B,a42B,a43B,a44B,a45B = getLast5Answers(dftr)
-all5C,a41C,a42C,a43C,a44C,a45C = getLast5Answers(dftr)
-all5D,a41D,a42D,a43D,a44D,a45D = getLast5Answers(dftr)
-all5E,a41E,a42E,a43E,a44E,a45E = getLast5Answers(dftr)
-dfToTrainA = transformLettersIntoNumbers(dfToTrain, 'A', 41)
-dfToTrainB = transformLettersIntoNumbers(dfToTrain, 'B', 41)
-dfToTrainC = transformLettersIntoNumbers(dfToTrain, 'C', 41)
-dfToTrainD = transformLettersIntoNumbers(dfToTrain, 'D', 41)
-dfToTrainE = transformLettersIntoNumbers(dfToTrain, 'E', 41)
+# dfToTrain['Nota'] = dftr['NU_NOTA_MT']
+a41, a42, a43, a44, a45 = getLast5Answers(dftr)
 
-# dfA = transformLettersIntoNumbers(all5A, 'A', 5).astype('float')
-# dfB = transformLettersIntoNumbers(all5A, 'B', 5).astype('float')
-# dfC = transformLettersIntoNumbers(all5A, 'C', 5).astype('float')
-# dfD = transformLettersIntoNumbers(all5A, 'D', 5).astype('float')
-# dfE = transformLettersIntoNumbers(all5A, 'E', 5).astype('float')
-
-df41A = transformLettersIntoNumbers(a41A, 'A', 1).astype('float')
-df41B = transformLettersIntoNumbers(a41B, 'B', 1).astype('float')
-df41C = transformLettersIntoNumbers(a41C, 'C', 1).astype('float')
-df41D = transformLettersIntoNumbers(a41D, 'D', 1).astype('float')
-df41E = transformLettersIntoNumbers(a41E, 'E', 1).astype('float')
-df42A = transformLettersIntoNumbers(a42A, 'A', 1).astype('float')
-df42B = transformLettersIntoNumbers(a42B, 'B', 1).astype('float')
-df42C = transformLettersIntoNumbers(a42C, 'C', 1).astype('float')
-df42D = transformLettersIntoNumbers(a42D, 'D', 1).astype('float')
-df42E = transformLettersIntoNumbers(a42E, 'E', 1).astype('float')
-df43A = transformLettersIntoNumbers(a43A, 'A', 1).astype('float')
-df43B = transformLettersIntoNumbers(a43B, 'B', 1).astype('float')
-df43C = transformLettersIntoNumbers(a43C, 'C', 1).astype('float')
-df43D = transformLettersIntoNumbers(a43D, 'D', 1).astype('float')
-df43E = transformLettersIntoNumbers(a43E, 'E', 1).astype('float')
-df44A = transformLettersIntoNumbers(a44A, 'A', 1).astype('float')
-df44B = transformLettersIntoNumbers(a44B, 'B', 1).astype('float')
-df44C = transformLettersIntoNumbers(a44C, 'C', 1).astype('float')
-df44D = transformLettersIntoNumbers(a44D, 'D', 1).astype('float')
-df44E = transformLettersIntoNumbers(a44E, 'E', 1).astype('float')
-df45A = transformLettersIntoNumbers(a45A, 'A', 1).astype('float')
-df45B = transformLettersIntoNumbers(a45B, 'B', 1).astype('float')
-df45C = transformLettersIntoNumbers(a45C, 'C', 1).astype('float')
-df45D = transformLettersIntoNumbers(a45D, 'D', 1).astype('float')
-df45E = transformLettersIntoNumbers(a45E, 'E', 1).astype('float')
-
-# parameters
-C = 0.1
-penalt = 'l2'
-stopFit = 0.00001
-solverMode = 'newton-cg'
+#parameters
+C = 1.0
+penalt = 'l1'
+stopFit = 0.0001
+solverMode = 'liblinear'
 maxIter = 200
-multiClass = 'multinomial'
-talk = True
+multiClass = 'ovr'
+talk = False
+reuse = False
 
-# LRA = LogisticRegression(C=C, penalty=penalt, tol = stopFit, solver = solverMode, max_iter = maxIter, multi_class = multiClass, verbose = talk)
-# LRB = LogisticRegression(C=C, penalty=penalt, tol = stopFit, solver = solverMode, max_iter = maxIter, multi_class = multiClass, verbose = talk)
-# LRC = LogisticRegression(C=C, penalty=penalt, tol = stopFit, solver = solverMode, max_iter = maxIter, multi_class = multiClass, verbose = talk)
-# LRD = LogisticRegression(C=C, penalty=penalt, tol = stopFit, solver = solverMode, max_iter = maxIter, multi_class = multiClass, verbose = talk)
-# LRE = LogisticRegression(C=C, penalty=penalt, tol = stopFit, solver = solverMode, max_iter = maxIter, multi_class = multiClass, verbose = talk)
 
-LR41A = LogisticRegression(C=C, penalty=penalt, tol = stopFit, solver = solverMode, max_iter = maxIter, multi_class = multiClass, verbose = talk)
-LR41B = LogisticRegression(C=C, penalty=penalt, tol = stopFit, solver = solverMode, max_iter = maxIter, multi_class = multiClass, verbose = talk)
-LR41C = LogisticRegression(C=C, penalty=penalt, tol = stopFit, solver = solverMode, max_iter = maxIter, multi_class = multiClass, verbose = talk)
-LR41D = LogisticRegression(C=C, penalty=penalt, tol = stopFit, solver = solverMode, max_iter = maxIter, multi_class = multiClass, verbose = talk)
-LR41E = LogisticRegression(C=C, penalty=penalt, tol = stopFit, solver = solverMode, max_iter = maxIter, multi_class = multiClass, verbose = talk)
+arrayToFit = transformLettersIntoNumbers(dfToTrain)
+LR41 = LogisticRegression(C=C, penalty=penalt, tol = stopFit, solver = solverMode, max_iter = maxIter, multi_class = multiClass, verbose = talk, warm_start = reuse)
+LR42 = LogisticRegression(C=C, penalty=penalt, tol = stopFit, solver = solverMode, max_iter = maxIter, multi_class = multiClass, verbose = talk, warm_start = reuse)
+LR43 = LogisticRegression(C=C, penalty=penalt, tol = stopFit, solver = solverMode, max_iter = maxIter, multi_class = multiClass, verbose = talk, warm_start = reuse)
+LR44 = LogisticRegression(C=C, penalty=penalt, tol = stopFit, solver = solverMode, max_iter = maxIter, multi_class = multiClass, verbose = talk, warm_start = reuse)
+LR45 = LogisticRegression(C=C, penalty=penalt, tol = stopFit, solver = solverMode, max_iter = maxIter, multi_class = multiClass, verbose = talk, warm_start = reuse)
 
-LR42A = LogisticRegression(C=C, penalty=penalt, tol = stopFit, solver = solverMode, max_iter = maxIter, multi_class = multiClass, verbose = talk)
-LR42B = LogisticRegression(C=C, penalty=penalt, tol = stopFit, solver = solverMode, max_iter = maxIter, multi_class = multiClass, verbose = talk)
-LR42C = LogisticRegression(C=C, penalty=penalt, tol = stopFit, solver = solverMode, max_iter = maxIter, multi_class = multiClass, verbose = talk)
-LR42D = LogisticRegression(C=C, penalty=penalt, tol = stopFit, solver = solverMode, max_iter = maxIter, multi_class = multiClass, verbose = talk)
-LR42E = LogisticRegression(C=C, penalty=penalt, tol = stopFit, solver = solverMode, max_iter = maxIter, multi_class = multiClass, verbose = talk)
-
-LR43A = LogisticRegression(C=C, penalty=penalt, tol = stopFit, solver = solverMode, max_iter = maxIter, multi_class = multiClass, verbose = talk)
-LR43B = LogisticRegression(C=C, penalty=penalt, tol = stopFit, solver = solverMode, max_iter = maxIter, multi_class = multiClass, verbose = talk)
-LR43C = LogisticRegression(C=C, penalty=penalt, tol = stopFit, solver = solverMode, max_iter = maxIter, multi_class = multiClass, verbose = talk)
-LR43D = LogisticRegression(C=C, penalty=penalt, tol = stopFit, solver = solverMode, max_iter = maxIter, multi_class = multiClass, verbose = talk)
-LR43E = LogisticRegression(C=C, penalty=penalt, tol = stopFit, solver = solverMode, max_iter = maxIter, multi_class = multiClass, verbose = talk)
-
-LR44A = LogisticRegression(C=C, penalty=penalt, tol = stopFit, solver = solverMode, max_iter = maxIter, multi_class = multiClass, verbose = talk)
-LR44B = LogisticRegression(C=C, penalty=penalt, tol = stopFit, solver = solverMode, max_iter = maxIter, multi_class = multiClass, verbose = talk)
-LR44C = LogisticRegression(C=C, penalty=penalt, tol = stopFit, solver = solverMode, max_iter = maxIter, multi_class = multiClass, verbose = talk)
-LR44D = LogisticRegression(C=C, penalty=penalt, tol = stopFit, solver = solverMode, max_iter = maxIter, multi_class = multiClass, verbose = talk)
-LR44E = LogisticRegression(C=C, penalty=penalt, tol = stopFit, solver = solverMode, max_iter = maxIter, multi_class = multiClass, verbose = talk)
-
-LR45A = LogisticRegression(C=C, penalty=penalt, tol = stopFit, solver = solverMode, max_iter = maxIter, multi_class = multiClass, verbose = talk)
-LR45B = LogisticRegression(C=C, penalty=penalt, tol = stopFit, solver = solverMode, max_iter = maxIter, multi_class = multiClass, verbose = talk)
-LR45C = LogisticRegression(C=C, penalty=penalt, tol = stopFit, solver = solverMode, max_iter = maxIter, multi_class = multiClass, verbose = talk)
-LR45D = LogisticRegression(C=C, penalty=penalt, tol = stopFit, solver = solverMode, max_iter = maxIter, multi_class = multiClass, verbose = talk)
-LR45E = LogisticRegression(C=C, penalty=penalt, tol = stopFit, solver = solverMode, max_iter = maxIter, multi_class = multiClass, verbose = talk)
-
-# LRA.fit(dfToTrainA, dfA)
-# LRB.fit(dfToTrainB, dfB)
-# LRC.fit(dfToTrainC, dfC)
-# LRD.fit(dfToTrainD, dfD)
-# LRE.fit(dfToTrainE, dfE)
-
-LR41A.fit(dfToTrainA, df41A)
-LR41B.fit(dfToTrainB, df41B)
-LR41C.fit(dfToTrainC, df41C)
-LR41D.fit(dfToTrainD, df41D)
-LR41E.fit(dfToTrainE, df41E)
-
-LR42A.fit(dfToTrainA, df42A)
-LR42B.fit(dfToTrainB, df42B)
-LR42C.fit(dfToTrainC, df42C)
-LR42D.fit(dfToTrainD, df42D)
-LR42E.fit(dfToTrainE, df42E)
-
-LR43A.fit(dfToTrainA, df43A)
-LR43B.fit(dfToTrainB, df43B)
-LR43C.fit(dfToTrainC, df43C)
-LR43D.fit(dfToTrainD, df43D)
-LR43E.fit(dfToTrainE, df43E)
-
-LR44A.fit(dfToTrainA, df44A)
-LR44B.fit(dfToTrainB, df44B)
-LR44C.fit(dfToTrainC, df44C)
-LR44D.fit(dfToTrainD, df44D)
-LR44E.fit(dfToTrainE, df44E)
-
-LR45A.fit(dfToTrainA, df45A)
-LR45B.fit(dfToTrainB, df45B)
-LR45C.fit(dfToTrainC, df45C)
-LR45D.fit(dfToTrainD, df45D)
-LR45E.fit(dfToTrainE, df45E)
-
+print("go fit")
+LR41.fit(arrayToFit, a41)
+LR42.fit(arrayToFit, a42)
+LR43.fit(arrayToFit, a43)
+LR44.fit(arrayToFit, a44)
+LR45.fit(arrayToFit, a45)
+print("finish fit")
 
 # Data to Predict
 df2 = openCSV('data/test3.csv')
@@ -260,126 +164,25 @@ dfSubscription = df2['NU_INSCRICAO']
 dfResults = lm.predict(dataToPredict)
 
 inputToPredict = getFirst40Answers(df2)
-inputToPredict['Nota'] = dfResults
-inputToPredictA = transformLettersIntoNumbers(inputToPredict, 'A', 41)
-inputToPredictB = transformLettersIntoNumbers(inputToPredict, 'B', 41)
-inputToPredictC = transformLettersIntoNumbers(inputToPredict, 'C', 41)
-inputToPredictD = transformLettersIntoNumbers(inputToPredict, 'D', 41)
-inputToPredictE = transformLettersIntoNumbers(inputToPredict, 'E', 41)
+# inputToPredict['Nota'] = dfResults
+arrayToPredict = transformLettersIntoNumbers(inputToPredict)
 
-is41A = LR41A.predict_proba(inputToPredictA)
-print(is41A)
-print()
 
-# isA = LR41A.predict_proba(inputToPredictA)[:, 1]
-# isB = LR41B.predict_proba(inputToPredictB)[:, 1]
-# isC = LR41C.predict_proba(inputToPredictC)[:, 1]
-# isD = LR41D.predict_proba(inputToPredictD)[:, 1]
-# isE = LR41E.predict_proba(inputToPredictE)[:, 1]
+answer41 = LR41.predict(arrayToPredict)
+answer42 = LR42.predict(arrayToPredict)
+answer43 = LR43.predict(arrayToPredict)
+answer44 = LR44.predict(arrayToPredict)
+answer45 = LR45.predict(arrayToPredict)
 
-is41A = LR41A.predict_proba(inputToPredictA)[:, 1]
-is41B = LR41B.predict_proba(inputToPredictB)[:, 1]
-is41C = LR41C.predict_proba(inputToPredictC)[:, 1]
-is41D = LR41D.predict_proba(inputToPredictD)[:, 1]
-is41E = LR41E.predict_proba(inputToPredictE)[:, 1]
+print("Score 41: "+ str(LR41.score(arrayToFit, a41)))
+print("Score 42: "+ str(LR42.score(arrayToFit, a42)))
+print("Score 43: "+ str(LR43.score(arrayToFit, a43)))
+print("Score 44: "+ str(LR44.score(arrayToFit, a44)))
+print("Score 45: "+ str(LR45.score(arrayToFit, a45)))
 
-is42A = LR42A.predict_proba(inputToPredictA)[:, 1]
-is42B = LR42B.predict_proba(inputToPredictB)[:, 1]
-is42C = LR42C.predict_proba(inputToPredictC)[:, 1]
-is42D = LR42D.predict_proba(inputToPredictD)[:, 1]
-is42E = LR42E.predict_proba(inputToPredictE)[:, 1]
-
-is43A = LR43A.predict_proba(inputToPredictA)[:, 1]
-is43B = LR43B.predict_proba(inputToPredictB)[:, 1]
-is43C = LR43C.predict_proba(inputToPredictC)[:, 1]
-is43D = LR43D.predict_proba(inputToPredictD)[:, 1]
-is43E = LR43E.predict_proba(inputToPredictE)[:, 1]
-
-is44A = LR44A.predict_proba(inputToPredictA)[:, 1]
-is44B = LR44B.predict_proba(inputToPredictB)[:, 1]
-is44C = LR44C.predict_proba(inputToPredictC)[:, 1]
-is44D = LR44D.predict_proba(inputToPredictD)[:, 1]
-is44E = LR44E.predict_proba(inputToPredictE)[:, 1]
-
-is45A = LR45A.predict_proba(inputToPredictA)[:, 1]
-is45B = LR45B.predict_proba(inputToPredictB)[:, 1]
-is45C = LR45C.predict_proba(inputToPredictC)[:, 1]
-is45D = LR45D.predict_proba(inputToPredictD)[:, 1]
-is45E = LR45E.predict_proba(inputToPredictE)[:, 1]
-
-results41 = np.stack((is41A, is41B, is41C,is41D, is41E), axis = -1)
-results42 = np.stack((is42A, is42B, is42C,is42D, is42E), axis = -1)
-results43 = np.stack((is43A, is43B, is43C,is43D, is43E), axis = -1)
-results44 = np.stack((is44A, is44B, is44C,is44D, is44E), axis = -1)
-results45 = np.stack((is45A, is45B, is45C,is45D, is45E), axis = -1)
-
-result41 = results41.argmax(axis=1)
-result42 = results42.argmax(axis=1)
-result43 = results43.argmax(axis=1)
-result44 = results44.argmax(axis=1)
-result45 = results45.argmax(axis=1)
-
-result41 = transformIndexToLetter(result41)
-result42 = transformIndexToLetter(result42)
-result43 = transformIndexToLetter(result43)
-result44 = transformIndexToLetter(result44)
-result45 = transformIndexToLetter(result45)
-
-results = np.stack((result41, result42, result43, result44, result45), axis = -1)
-
+results = np.stack((answer41, answer42, answer43, answer44, answer45), axis = -1)
 output = createAnswer(dfSubscription, results)
 data = createDatagrama(output)
 # print(data)
 
-print("\n\n\nY1")
-unique,counts = np.unique(result41,return_counts=True)
-print np.asarray((unique, counts)).T
-print("Y2")
-unique,counts = np.unique(result42,return_counts=True)
-print np.asarray((unique, counts)).T
-print("Y3")
-unique,counts = np.unique(result43,return_counts=True)
-print np.asarray((unique, counts)).T
-print("Y4")
-unique,counts = np.unique(result44,return_counts=True)
-print np.asarray((unique, counts)).T
-print("Y5")
-unique,counts = np.unique(result45,return_counts=True)
-print np.asarray((unique, counts)).T
-
-# sendDatagram('https://api.codenation.com.br/v1/user/acceleration/data-science/challenge/enem-3/submit', data)
-
-# print(result41)
-# print(result42)
-# print(result43)
-# print(result44)
-# print(result45)
-print("Score of 41A: "+ str(LR41A.score(dfToTrainA,df41A)))
-print("Score of 41B: "+ str(LR41B.score(dfToTrainA,df41B)))
-print("Score of 41C: "+ str(LR41C.score(dfToTrainA,df41C)))
-print("Score of 41D: "+ str(LR41D.score(dfToTrainA,df41D)))
-print("Score of 41E: "+ str(LR41E.score(dfToTrainA,df41E)))
-
-print("Score of 42A: "+ str(LR42A.score(dfToTrainA,df42A)))
-print("Score of 42B: "+ str(LR42B.score(dfToTrainA,df42B)))
-print("Score of 42C: "+ str(LR42C.score(dfToTrainA,df42C)))
-print("Score of 42D: "+ str(LR42D.score(dfToTrainA,df42D)))
-print("Score of 42E: "+ str(LR42E.score(dfToTrainA,df42E)))
-
-print("Score of 43A: "+ str(LR43A.score(dfToTrainA,df43A)))
-print("Score of 43B: "+ str(LR43B.score(dfToTrainA,df43B)))
-print("Score of 43C: "+ str(LR43C.score(dfToTrainA,df43C)))
-print("Score of 43D: "+ str(LR43D.score(dfToTrainA,df43D)))
-print("Score of 43E: "+ str(LR43E.score(dfToTrainA,df43E)))
-
-print("Score of 44A: "+ str(LR44A.score(dfToTrainA,df44A)))
-print("Score of 44B: "+ str(LR44B.score(dfToTrainA,df44B)))
-print("Score of 44C: "+ str(LR44C.score(dfToTrainA,df44C)))
-print("Score of 44D: "+ str(LR44D.score(dfToTrainA,df44D)))
-print("Score of 44E: "+ str(LR44E.score(dfToTrainA,df44E)))
-
-print("Score of 45A: "+ str(LR45A.score(dfToTrainA,df45A)))
-print("Score of 45B: "+ str(LR45B.score(dfToTrainA,df45B)))
-print("Score of 45C: "+ str(LR45C.score(dfToTrainA,df45C)))
-print("Score of 45D: "+ str(LR45D.score(dfToTrainA,df45D)))
-print("Score of 45E: "+ str(LR45E.score(dfToTrainA,df45E)))
+sendDatagram('https://api.codenation.com.br/v1/user/acceleration/data-science/challenge/enem-3/submit', data)
